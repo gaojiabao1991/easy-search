@@ -38,13 +38,4 @@ public class ScanSearcher extends ASearcher {
         }
     }
     
-    public void showResult(String word,List<String> foundFiles){
-        System.out.println("搜索词："+word+" ,找到文档 "+foundFiles.size()+" 篇，文档列表：");
-        for (String s : foundFiles) {
-            System.out.println(s);
-        }
-        System.out.println("------------------");
-    }
-
-
 }
