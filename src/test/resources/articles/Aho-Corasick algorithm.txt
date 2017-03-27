@@ -1,0 +1,371 @@
+                                                            1. Introduction 
+
+                                                                In many  information  retrieval and text-editing appli- 
+                                                            cations it is necessary to be able to locate quickly some or 
+                                                            all occurrences  of user-specified patterns of words  and 
+Programming                  Glenn  Manacher                phrases  in text. This paper describes a simple, efficient 
+Techniques                   Editor                         algorithm  to locate all occurrences  of any  of  a finite 
+                                                             number  of  keywords  and  phrases  in an  arbitrary text 
+Efficient                                                   string. 
+                                                                The  approach should  be familiar to those acquainted 
+String          Matching:                                   with  finite automata. The algorithm consists of two parts. 
+                                                             In the first part we construct from the set of keywords a 
+                                                             finite state pattern matching machine; in the second part 
+An        Aid        to                                      we apply the text string as input to the pattern matching 
+                                                             machine.  The  machine  signals whenever  it has found a 
+Bibliographic                      Search                   match  for a keyword. 
+                                                                Using finite state machines in pattern matching appli- 
+Alfred   V.  Aho   and   Margaret    J. Corasick            cations is not  new [4,  8, 17], but their use seems to be 
+Bell  Laboratories                                           frequently shunned  by programmers.   Part of the reason 
+                                                             for this reluctance on the part of programmers   may  be 
+                                                            due  to the complexity  of programming  the  conventional 
+                                                            algorithms  for constructing finite automata from regular 
+   This paper describes a simple, efficient algorithm to    expressions  [3,  10, 15], particularly if state minimization 
+locate all occurrences of any of a finite number of key-    techniques  are needed  [2,  14]. This paper shows that an 
+words in a string of text. The algorithm consists of con-   efficient  finite state pattern matching machine  can  be 
+structing a finite state pattern matching machine from the  constructed  quickly and simply from  a restricted class of 
+keywords and  then using the pattern matching machine        regular expressions, namely those consisting of finite sets 
+to process the text string  in a single pass. Construction  of  keywords.  Our  approach  combines   the ideas in the 
+of the pattern matching machine takes time proportional      Knuth-Morris-Pratt  algorithm  [13] with those  of finite 
+to the sum of the lengths of the keywords. The number       state machines. 
+of state transitions made by the pattern matching               Perhaps  the most  interesting aspect of this paper is 
+machine  in processing the text string is independent of     the amount   of improvement   the  finite state algorithm 
+the number of keywords.  The algorithm  has been used to    gives over  more  conventional approaches.  We   used the 
+improve the speed of a library bibliographic search pro-     finite state pattern matching algorithm in a library biblio- 
+gram by a factor of 5 to 10.                                graphic  search program.  The  purpose of the  program  is 
+   Keywords and Phrases:  keywords and phrases,  string     to allow a bibliographer to find in a citation index all titles 
+pattern matching, bibliographic search, information re-     satisfying some    Boolean  function  of  keywords  and 
+trieval, text-editing, finite state machines, computational  phrases. The search  program was  first implemented with 
+complexity.                                                  a straightforward string matching  algorithm.  Replacing 
+   CR Categories: 3.74,  3.71,  5.22, 5.25                   this algorithm with the finite state approach resulted in a 
+                                                             program  whose running  time was a fifth to a tenth of the 
+                                                            original program on typical inputs. 
+
+                                                             2. A Pattern Matching Machine 
+
+                                                                This  section describes a  finite state string pattern 
+                                                             matching  machine  that locates keywords in a text string. 
+                                                             The  next section describes the  algorithms to construct 
+                                                             such a machine from  a given finite set of keywords. 
+                                                                In this paper a  string is simply a finite sequence of 
+                                                             symbols.  Let K  =  {Yl,Y2 .....  Yk}  be a finite set of 
+                                                             strings which we shall call keywords and let x be an arbi- 
+                                                             trary string which we  shall call the text string. Our  prob- 
+  Copyright ©  1975, Association for Computing Machinery, Inc. lem is to locate and identify all substrings of x which are 
+General permission to republish, but not for  profit,  all or part of keywords in K. Substrings may overlap with one another. 
+this material is granted, provided that ACM's copyright notice is 
+given and that reference is made to this publication, to its date of A pattern matching machine for K is a program which 
+issue, and  to the fact that reprinting privileges were granted by takes as input the text string x and produces as output 
+permission of the Association for Computing Machinery.       the locations in x at which keywords of K appear as sub- 
+  Authors' present addresses: A. V. Aho, Bell Laboratories,  strings. The pattern matching  machine  consists of a set 
+Murray Hill,  N.J. 07974. M. J. Corasick, The MITRE Corporation, of states. Each state is represented by a number. The 
+Bedford,  Mass. 01730.                                       machine  processes the text string x by successively read- 
+                                                             ing the symbols  in x, making state transitions and occa- 
+
+333                                                          Communications             June 1975 
+                                                             of                         Volume  18 
+                                                             the ACM                    Number  6 
+ sionally emitting output.  The  behavior  of the pattern     output(s') # empty, then   the  machine  emits   the set 
+ matching  machine  is dictated  by three functions: a goto   output(s') along with  the position of the current input 
+ function g,  a failure function f, and an output  function  symbol.  The operating cycle is now complete. 
+ output.                                                         2. If g(s, a) = fail, the machine consults the failure 
+    Figure  1  shows  the  functions  used  by  a pattern     function f and  is said to make   a failure transition. If 
+ matching  machine  for the set of keywords {he, she, his,   f(s)  = s"  the machine  repeats the cycle with  s' as the 
+ hers}.                                                      current state and a as the current input symbol. 
+                                                                 Initially, the current state of the machine is the start 
+ Fig. 1. Pattern matching machine.                           state and the first symbol of the text string is the current 
+                                                              input symbol.   The  machine   then  processes  the  text 
+                                                             string by making one   operating cycle on each symbol  of 
+                                                             the text string. 
+                                                                 For example, consider the behavior of the machine M 
+                                                             that uses  the functions in Figure  1 to process the  text 
+                                                             string "ushers."  Figure 2 indicates the state transitions 
+                                                             made  by  M in processing the text string. 
+
+                                                             Fig. 2. Sequence of state  transitions. 
+
+                                                                                u  s  h  e  r  s 
+                     (a) Goto function.                                        00345           89 
+                                                                                            2 
+          i       123456789 
+         f(i)     000120303                                      Consider the  operating cycle when M  is in state 4 and 
+                    (b) FailureNnction.                      the  current input symbol   is  e. Since g(4, e) =  5, the 
+                                                             machine   enters state 5, advances to the next input sym- 
+                                                             bol and  emits output(5), indicating that it has found the 
+                     i        output (i) 
+                                                             keywords  "she" and "he" at the end of position four in the 
+                     2        {he}                           text string. 
+                     5        {she, he}                          In state 5 on input symbol r, the machine  makes  two 
+                     7        {his}                          state   transitions  in   its  operating   cycle.   Since 
+                     9        {hers}                         g(5, r)  =fail  M   enters state 2  =f(5).   Then   since 
+                    (c) Output function.                     g(2, r)  -- 8,  M enters state 8 and advances to the next 
+                                                             input symbol.   No  output  is generated in this operating 
+                                                             cycle. 
+    One  state (usually 0) is designated as a start state. In    The following algorithm summarizes the  behavior of a 
+Figure  1 the states are 0, 1....  ,9. The goto function g   pattern matching machine. 
+maps  a pair consisting of a state and an input symbol into 
+a state or the  message fail. The directed graph in Figure 
+ l(a) represents the goto function. For example, the edge    Algorithm I. Pattern matching machine. 
+                                                             Input. A  text string x  =  a I a 2 - - • a n where  each a i is an input 
+labeled h  from  0 to 1 indicates that g(0, h) =  1. The 
+                                                                 symbol and a pattern  matching machine M  with goto func- 
+absence  of an arrow  indicates fail Thus, g(1, tr) =fail 
+                                                                 tion g, failure function f, and output function output, as 
+for all input symbols tr that are not e or i. All our pat-       described  above. 
+tern   matching  machines     have   the   property  that    Output.  Locations at which  keywords occur in x. 
+g (0, ~r) # fail for all input symbols tr. We shall see that Method. 
+this property of the goto function on state 0 ensures that       begin 
+one  input symbol  will be  processed by  the machine  in          state ~  0 
+every machine cycle.                                               for i~ 1 until n do 
+    The  failure function f maps a state into a state. The            begin 
+failure function is consulted whenever  the goto function                while g (state, a i )  = fail do state ~ f(state) 
+reports fail Certain states are designated as output states             state ~  g (state, a i ) 
+which  indicate that a set of keywords   has been  found.                if output (state) ;~ empty then 
+The  output  function formalizes this concept by associat-                 begin 
+                                                                              print i 
+ing a set of keywords  (possibly empty) with every state. 
+                                                                              print output (state) 
+        operating cycle 
+    An                 of a pattern matching  machine   is                 end 
+defined  as follows.  Let s be  the current  state of the             end 
+machine and   a the current symbol of the input string x.        end 
+    1. If g(s, a) =  s', the machine makes  a goto transi- 
+tion. It enters state s' and the next symbol of x becomes        Each pass through the for-loop  represents one operating  cy- 
+the    current    input   symbol.     In    addition,   if       cle of the machine. 
+
+334                                                           Communications             June 1975 
+                                                              of                         Volume  18 
+                                                              the ACM                    Number 6 
+    Algorithm 1 is patterned after the Knuth-Morris-Pratt 
+algorithm  for finding one keyword   in a text string [13]          ( 
+and  can be  viewed as an  extension of the "trie" search 
+discussed in [11]. Hopcroft and Karp  (unpublished) have 
+suggested a scheme  similar to Algorithm 1 for finding the 
+first occurrence of any  of a finite set of keywords in a 
+text string [13]. Section 6 of this paper discusses a deter- 
+ministic finite automaton  version  of Algorithm   1 that 
+avoids all failure transitions. 
+
+3. Construction of Goto, Failure, and Output Functions 
+
+    We  say that the three functions  g, f, and output are   Adding the  last keyword "hers," we obtain: 
+ valid for a set of keywords if with these functions Algo- 
+rithm  1 indicates that keyword y ends at position i of text 
+string x if and only if x  = uyv and  the length of uy is i. 
+    We   shall now  show   how  to  construct valid goto, 
+ failure and output  functions from  a  set of keywords. 
+ There are two parts to the construction. In the first part 
+ we determine  the states and  the goto function.  In the 
+ second part we  compute  the failure function. The com- 
+ putation of the output function is begun in the first part 
+of the construction and completed  in the second part. 
+    To  construct the goto function, we shall construct a 
+goto graph. We  begin with  a graph consisting of one ver- 
+ tex which  represents the state 0. We   then enter  each 
+ keyword  y into the graph, by  adding a directed path to    The  output  "hers"  is associated with state 9. Here we 
+ the graph that begins at the start state. New vertices and   have been  able to use the existing edge labeled h from 
+ edges are added to the graph so that there will be, starting state 0 to 1 and  the existing edge labeled e from state 1 to 
+ at the start state, a path in the graph that spells out the  2. 
+ keyword  y. The  keyword  y is added to the output func-        Up  to this point  the  graph is a rooted directed tree. 
+ tion of the state at which the path terminates.  We  add     To complete the construction of the goto function we add 
+ new edges to the graph only when  necessary.                 a loop from state 0 to state 0 on all input symbols other 
+    For example,  suppose {he, she, his, hers} is the set of  than h or s. We  obtain the directed graph shown  in Fig- 
+ keywords.  Adding  the first keyword to the graph, we ob-    ure l(a). This graph represents the goto function. 
+ tain:                                                           The  failure function  is constructed from   the goto 
+                                                              function. Let us define  the depth of a state s in the goto 
+                                                              graph as the length  of the shortest path from  the start 
+                                                              state to s. Thus in Figure 1 (a), the start state is of depth 
+                                                              0, states 1 and 3 are of depth 1, states 2, 4, and 6 are of 
+                                                              depth 2, and so on. 
+                                                                 We  shall compute  the failure function for all states of 
+ The  path  from state 0 to state 2 spells out  the  keyword  depth 1, then for all states of depth 2, and so on, until the 
+ "he"; we  associate the output "he" with state 2. Adding     failure function has been computed  for all states (except 
+ the second keyword  "she," we obtain the graph:              state 0 for which the failure function is not defined). The 
+                                                              algorithm to compute  the failure function f at a state is 
+                                                              conceptually quite simple.  We   make  f(s)  --0  for all 
+                                                              states s of depth 1. Now  suppose f  has been  computed 
+                                                              for all states of depth less than d. The failure function 
+                                                              for the states of depth  d is computed  from  the failure 
+                                                              function for the states of depth less than d. The states of 
+                                                              depth d can be determined  from the nonfail values of the 
+                                                              goto function of the states of depth d- 1. 
+                                                                 Specifically, to compute the  failure function for the 
+ The  output "she"  is associated with state 5. Adding the    states of depth d, we consider each state r of depth d--1 
+ keyword  "his," we  obtain  the following  graph. Notice     and perform the following actions. 
+ that  when we add  the keyword  "his" there is already an 
+ edge labeled h from state 0 to state 1, so  we do not need      1. lfg(r, a)  =failfor  all a, do nothing. 
+ to add another edge labeled h from state 0 to state 1. The      2.   Otherwise,   for  each   symbol   a   such   that 
+ output "his" is associated with state 7.                     g(r, a) -- s, do the following: 
+
+ 335                                                          Communications              June 1975 
+                                                              of                          Volume 18 
+                                                              the ACM                     Number  6 
+      (a)  Set state = f(r).                                  The  following algorithm,  whose inner loop is similar to 
+                                                              Algorithm 1, computes the  failure function. 
+      (b) Execute  the statement  state'-f  (state) zero or 
+         more  times, until a value  for state is obtained 
+                                                              Algorithm 3. Construction of the failure function. 
+         such  that g(state,  a)#fail.  (Note  that since 
+                                                              Input. Goto function g and output function output from  Algo- 
+         g(O, a) #  fail for all a, such a state will always     rithm 2. 
+         be found.)                                           Output.  Failure function fand output function output. 
+      (c) Setf(s) --g(state, a).                              Method. 
+                                                                 begin 
+    For example,  to  compute  the  failure function from           queue ~ empty 
+Figure  l(a), we would first set f(1 )  = f(3) =  0 since 1         for each  a such that g(O, a) =  s ;~ 0 do 
+and  3 are the states of  depth 1. We  then  compute  the             begin 
+failure function for 2, 6, and 4, the states of depth 2. To              queue ~ queue LI  {s } 
+compute f(2),  we  set state = f(1 )  = 0; and since g(0, e)            f(s) ~  0 
+=  0, we  find that f(2) =  0. To  compute f(6),   we set             end 
+                                                                    while queue ~ empty do 
+state =f(1 )  = 0; and since g(0, i) = 0, we find that f(6) 
+                                                                      begin 
+=  0.  To compute   f(4), we  set state = f(3)  =  0; and 
+                                                                         let r be the next state in queue 
+since g(0, h) =  1, we find that f(4) = 1. Continuing in                 queue ~-- queue - {r} 
+this fashion, we obtain the failure function shown in Fig-               for each asuch that g(r, a) =  s  ¢ fail do 
+ure 1 (b).                                                                 begin 
+    During  the computation   of the failure function we                      queue ~ queue t2 {s } 
+also update  the  output function.  When   we  determine                      state ~ f(r) 
+f(s)  = s', we merge  the outputs of state s with the out-                    while g (state, a) = fail do state ~ f(state) 
+puts of state s'.                                                             f(s) ~ g(state, a) 
+    For  example,   from    Figure  l(a)  we   determine                      output(s) ~ output(s) U output(f (s)) 
+                                                                           end 
+f(5)  =  2. At this point we merge the output set of state 
+                                                                      end 
+2, namely  {he}, with the output  set of state 5 to derive 
+                                                                 end 
+the new output set  {he, she}. The final nonempty output 
+sets are shown in Figure 1 (c).                                  The first  for-loop computes the states of depth 1 and enters 
+    The algorithms to construct the goto, failure and out-       them in a  first-in  first-out  list denoted by the variable queue. 
+put functions from K  are summarized below.                      The  main while-loop computes the set of states of depth d 
+                                                                 from the set of states of depth d-- 1. 
+Algorithm 2. Construction of the goto function. 
+Input. Set of keywords K  = {Yl, Y2 ..... Yk}. 
+                                                                 The  failure function produced by  Algorithm  3 is not 
+Output. Goto  function g and a  partially computed output func- 
+                                                              optimal in  the following  sense.  Consider  the  pattern 
+    tion output. 
+Method.  We  assume  output(s) is empty when state  s is first matching machine Mof   Figure 1. We see g(4,  e) = 5. If 
+    created, and g(s, a) = fail if a is undefined or if g(s, a) has M  is in state 4 and the current input symbol a i is not an 
+    not yet been defined. The procedure enter(y) inserts into e, then M  would enter state f(4)  = 1.  Since M  has al- 
+    the goto graph  a path that spells out y.                 ready determined  that a i  ~ e, M does not then need  to 
+                                                             consider  the  value of the goto function of state 1 on e. 
+    begin                                                     In fact, if the keyword "his" were  not present, then M 
+      newstate .-- 0                                         could  go directly from state 4 to state 0, skipping an un- 
+      for i ~  1 until k do enter(y i )                       necessary intermediate transition to state 1. 
+      for all asuch that g(O, a) = faildo g(O, a) ~  0 
+                                                                 To  avoid making   unnecessary  failure transitions we 
+    end 
+                                                             can use f', a generalization of the next function from [13], 
+                                                              in place  of  f  in  Algorithm   1.  Specifically, define 
+    procedure enter(a 1 a 2  •  •  • a m ): 
+    begin                                                    f'(1 )  =  0. For i  > 1, define f'(i) = f'Or(i) ) if, for all 
+      state ~ 0; j *- 1                                      input symbols  a, gor(i),  a) # fail implies g(L  a) # fail; 
+      while g (state, aj )  # fail do                        define f'(i)  = f(i), otherwise. However,   to avoid mak- 
+         begin                                                ing any failure transitions at all, we can use the deter- 
+           state ~  g (state, a) )                           ministic finite automaton version of Algorithm  1 given in 
+           j,--j+l                                           Section 6. 
+         end 
+      for p '-- j until m do 
+                                                             4. Properties of Algorithms I, 2, and 3 
+         begin 
+           newstate *- newstate +  1                             This section shows  that the goto, failure, and output 
+           g (state, ap ) *-- newstate                        functions  constructed by  Algorithms  2  and  3 from  a 
+           state ~ newstate 
+                                                             given set of keywords K  are indeed valid for K. 
+         end 
+                                                                 We  say that u is a prefix and v is a suffix of the string 
+      output(state) ~  { a I a 2 ...a m} 
+    end                                                       uv. If u is not the empty string, then u is a proper prefix. 
+                                                             Likewise, if v is not empty, then v is a proper suffix. 
+
+336                                                           Communications             June 1975 
+                                                              of                         Volume  18 
+                                                              the ACM                    Number 6 
+    We   say that string u represents state s of a pattern    d. Let u be the string that represents state s. 
+ matching  machine  if the shortest path in the goto graph       Consider  a string y  in output(s).  If y is added  to 
+ from the start  state to state s spells out u. The start state output(s) by Algorithm 2, then y  =  u and y  is  a keyword. 
+ is represented by the empty string.                          If y  is added to output(s) by Algorithm  3, then y is in 
+    Our  first lemma characterizes the failure function con-  outputOr(s)).  By the  inductive hypothesis, y  is  a key- 
+ structed by Algorithm 3.                                     word that is  a suffix of the string representing state f(s). 
+                                                              By Lemma   1, any such keyword  must be a suffix of u. 
+    LEMMA 1.    Suppose  that in the  goto graph state s is 
+                                                                 Conversely, suppose  y is any keyword  that is  a suffix 
+ represented by the string u and state t is represented by the 
+                                                              of u.  Since y is a  keyword,  there is a state t that is 
+ string v. Then, f(s) =  t if and only if v is the  longest proper 
+                                                              represented by y.  By Algorithm  2, output(t) contains y. 
+ suffix of u that is also a prefix of some keyword. 
+                                                              Thus if y  =  u, then s  =  t and output(s) certainly contains 
+    PROOF.   The   proof proceeds  by   induction on  the     y. If y  is  a proper suffix of u, then from the inductive hy- 
+ length of u (or equivalently the  depth of state s). By Al-  pothesis and Lemma   1 we  know  output(f(s)) contains y. 
+ gorithm 3 f(s) =  0 for all states s of depth 1. Since each  Since Algorithm  3 considers states in order  of increasing 
+ state of depth 1 is represented by a string of length 1, the depth,  the   last  statement   of  Algorithm   3   adds 
+ statement of the lemma   is trivially true for all strings of outputOC(s)) and hence y to output(s). [] 
+ length 1. 
+    For  the inductive step, assume the statement of Lem-        The  following  lemma  characterizes the  behavior  of 
+ ma  1  is true for all strings of length less than j, j  > 1. Algorithm 1 on a text string x  =  a I a 2 • • - a n. 
+ Suppose  u  =  a la 2 ... aj for some j  > 1, and v  is the     LEMMA 3.   After the jth operating cycle, Algorithm 1 will 
+ longest  proper suffix of u that is a prefix of some key-    be in state s if and only if s is represented by the longest 
+ word.  Suppose  u  represents state s and  ala 2 ...a  j_ 1  suffix of a I a 2  • • • aj that is a prefix of some keyword. 
+ represents state r. Let r 1, r2,  • • •  ,  rn  be the sequence of 
+                                                                 PROOF.  Similar to Lemma  1.  [] 
+ states such that 
+                                                                 THEOREM 1.    Algorithms 2  and 3  produce valid goto, 
+    1. r 1  = f(r), 
+                                                             failure, and output functions. 
+    2. ri+l  =f(ri)  for 1 ~< i  < n, 
+    3. g(r i,aj)  =failforl  ~< i  <  n, and                     PROOF.  By Lemmas   2 and 3.  [] 
+    4. g(rn, aj) =  t;~ fail. 
+                                                              5. Time Complexity  of Algorithms 1, 2,  and 3 
+ (If  g(r l,aj) ~fail,  then   rn  =r 1.) The    sequence 
+                                                                 We  now  examine   the time complexity of Algorithms 
+ q, r2,  • • •  ,  rn  is the sequence of values assumed by the 
+ variable state in the inner  while-loop of Algorithm   3.    1, 2, and 3. We  shall show  that using the goto, failure 
+ The statement  following that while-loop makes f(s)  =  t.   and output functions created by Algorithms  2 and  3, the 
+                                                              number of state transitions made by  Algorithm  1 in pro- 
+ We  claim  that t is represented  by the  longest proper 
+ suffix of u that is  a prefix of some keyword.              cessing  a text string is independent  of the number   of 
+                                                              keywords.  We  shall also show  that Algorithms 2 and  3 
+    To  prove  this, suppose   v i represents state r i for 
+                                                             can  be implemented to  run in time that is linearly propor- 
+ 1 ~< i ~< n. By the inductive hypothesis v1  is the longest 
+                                                              tional to the sum of the lengths of the keywords in K. 
+ proper suffix of ala 2 ...a  j_ 1 that is  a prefix of some 
+ keyword;  v2  is the  longest proper suffix of v1  that is  a   THEOREM 2.   Using the goto, failure and output functions 
+ prefix of some keyword;  v3  is the longest proper suffix of created by Algorithms 2 and 3, Algorithm 1 makes fewer than 
+ v2  that is  a prefix of some keyword, and so on.            2n state transitions in processing a text string of length n. 
+    Thus  vn  is the  longest proper suffix of a 1 a 2 ... aj_ 1 
+                                                                 PROOF.  In  each operating cycle  Algorithm  1 makes 
+ such that vnaj  is  a prefix of some keyword.  Therefore 
+                                                             zero or  more  failure transitions followed by  exactly one 
+ vnaj  is the  longest proper suffix of u that is  a prefix of 
+                                                             goto  transition. From  a state s of  depth d Algorithm 1 
+some   keyword.  Since Algorithm  3 sets f(s) =  g(r n, aj) 
+                                                             can  never  make  more  than  d failure transitions in one 
+ = t, the proof is complete. [] 
+                                                             operating cycle. 1 Thus the total number of failure transi- 
+    The  next  lemma   characterizes the output  function    tions must  be at  least one less than the total number of 
+constructed by  Algorithms 2 and 3.                          goto transitions. In processing an input of length n Algo- 
+                                                             rithm  1 makes  exactly n goto transitions. Therefore the 
+    LEMMA 2.   The set output(s) contains y if and only if y 
+                                                             total number of state transitions is less than 2n. [] 
+ is a keyword that is a suffix of the string representing state s. 
+                                                                 The  actual time complexity  of Algorithm  1 depends 
+    PROOF.  In Algorithm  2 whenever  we  add to the goto 
+                                                             on how  expensive it is: 
+graph  a state s that is represented by  a keyword  y we 
+make   output(s) = {y}.  Given this initialization, we shall     1. to determine   g(s, a) for each state s and  input 
+show  by  induction on the  depth of state s that output(s)  symbol  a, 
+ =  {yl  y  is  a keyword that  is  a suffix of the string 
+representing state s }.                                           1 As many as d failure  transitions can be  made.  [13] shows 
+    This statement  is certainly  true for the start  state  that, if there is only one keyword in K, O(logd) is the maximum 
+                                                             number of failure  transitions  which can be made in one operat- 
+which  is of depth 0. Assuming this  statement is true for 
+                                                             ing cycle. 
+all states of depth less than d, consider a state s of depth 
+
+337                                                          Communications              June 1975 
+                                                             of                          Volume  18 
+                                                              the ACM                    Number 6 
