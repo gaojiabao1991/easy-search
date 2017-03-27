@@ -3,5 +3,5 @@
   <groupId>cn.sheeva</groupId>
   <artifactId>easy-search</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>easy-search</name>
+  <name>easy-search</name> 
 </project>
