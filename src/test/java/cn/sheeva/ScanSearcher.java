@@ -9,10 +9,6 @@ import org.apache.commons.io.FileUtils;
 
 public class ScanSearcher extends ASearcher {
 
-    public ScanSearcher(String[] searchWords) {
-        super(searchWords);
-    }
-
     @Override
     public void search(String word) {
         List<String> foundFiles=new LinkedList<>();

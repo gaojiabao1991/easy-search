@@ -1,9 +1,11 @@
 package cn.sheeva.doc;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DocIdMap{
+public class DocIdMap implements Serializable{
+    private static final long serialVersionUID = 1L;
     private long nextId;
     private Map<Long, Doc> map=new HashMap<>();
     

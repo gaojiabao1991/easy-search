@@ -1,12 +1,13 @@
 package cn.sheeva.doc;
 
 import java.io.File;
+import java.io.Serializable;
 
-public class Doc {
-    public long id;
-    public File file;
+public class Doc implements Serializable{
+    private long id;
+    public String filePath;
     
-    public Doc(File file) {
-        this.file=file;
+    public Doc(String filePath) {
+        this.filePath=filePath;
     }
 }
