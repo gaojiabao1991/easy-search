@@ -10,6 +10,8 @@ import cn.sheeva.doc.Doc;
 import cn.sheeva.doc.DocIdMap;
 import cn.sheeva.index.Indexer;
 import cn.sheeva.search.Searcher;
+import cn.sheeva.token.ComplexTokenizer;
+import cn.sheeva.token.SimpleTokenizer;
 import cn.sheeva.util.TimeProfiler;
 import cn.sheeva.index.Index;
 
@@ -18,7 +20,7 @@ public class IndexSearcher extends ASearcher {
     private Searcher searcher=new Searcher();
     
     public IndexSearcher(String indexName) {
-        indexer=new Indexer(indexName);
+        indexer=new Indexer(indexName,new SimpleTokenizer());
     }
 
     @Override

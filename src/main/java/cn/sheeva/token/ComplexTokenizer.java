@@ -13,12 +13,12 @@ import org.lionsoul.jcseg.tokenizer.core.JcsegException;
 import org.lionsoul.jcseg.tokenizer.core.JcsegTaskConfig;
 import org.lionsoul.jcseg.tokenizer.core.SegmentFactory;
 
-public class Tokenizer {
+public class ComplexTokenizer implements ITokenizer{
     private static JcsegTaskConfig config = new JcsegTaskConfig();
     private static ADictionary dic = DictionaryFactory.createSingletonDictionary(config);
     
     private ASegment seg;
-    public Tokenizer() {
+    public ComplexTokenizer() {
         try {
             seg=(ASegment) SegmentFactory.createJcseg(JcsegTaskConfig.COMPLEX_MODE, new Object[] { config, dic });
         } catch (JcsegException e) {

@@ -10,8 +10,8 @@ public class MainTest {
         String[] searchWords=new String[]{"搜索"};
         
 //        scanSearcher.showTimeProfiler(searchWords);
-        indexSearcher.deleteIndex();
-        indexSearcher.index();
+//        indexSearcher.deleteIndex();
+//        indexSearcher.index();
         indexSearcher.showTimeProfiler(searchWords);
     }
 }

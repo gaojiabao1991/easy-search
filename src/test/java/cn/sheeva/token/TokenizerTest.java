@@ -14,7 +14,7 @@ public class TokenizerTest {
             Thread t=new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    Tokenizer tokenizer=new Tokenizer();
+                    ComplexTokenizer tokenizer=new ComplexTokenizer();
                     for (int j = 0; j < 1000; j++) {
                         System.out.println(tokenizer.getTokens("搜索互联网search"));
                     }

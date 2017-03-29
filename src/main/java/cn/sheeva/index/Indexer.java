@@ -10,7 +10,8 @@ import org.apache.commons.io.FileUtils;
 
 import cn.sheeva.doc.Doc;
 import cn.sheeva.doc.DocIdMap;
-import cn.sheeva.token.Tokenizer;
+import cn.sheeva.token.ITokenizer;
+import cn.sheeva.token.ComplexTokenizer;
 import cn.sheeva.util.ResourceUtil;
 import cn.sheeva.util.SerializeUtil;
 
@@ -20,14 +21,16 @@ public class Indexer implements IIndexer,Serializable{
     private String indexPath;
     private SerializeUtil<Index> serializeUtil=new SerializeUtil<>();
 
-    private Tokenizer tokenizer=new Tokenizer();
+    private ITokenizer tokenizer;
     public Index index;
     
     /**
      * 同一个indexName同一时间只能只能打开一个Indexer对象，否则可能会造成索引损坏
      * TODO 添加一个文件锁强制拒绝多个Indexer打开同一个索引
      */
-    public Indexer(String indexPath) {
+    public Indexer(String indexPath,ITokenizer tokenizer) {
+        this.tokenizer=tokenizer;
+        
         this.indexPath=indexPath;
         File indexFile=new File(indexPath);
         
@@ -54,7 +57,9 @@ public class Indexer implements IIndexer,Serializable{
         for (Doc doc : docs) {
             add2RAM(doc);
         }
+        System.out.println("正在持久化索引到磁盘...");
         serializeUtil.serialize(this.index, indexPath);
+        System.out.println("持久化索引到磁盘完成...");
     }
     
     public synchronized void add(Doc doc) throws IOException{
@@ -63,6 +68,7 @@ public class Indexer implements IIndexer,Serializable{
     }
     
     private synchronized void add2RAM(Doc doc)  throws IOException{
+        System.out.println(Runtime.getRuntime().freeMemory()/1000/1000);
         long id=index.docIdMap.add(doc);
         
         List<String> lines=FileUtils.readLines(new File(doc.filePath));
@@ -78,6 +84,7 @@ public class Indexer implements IIndexer,Serializable{
                 }
             }
         }
+        System.out.println("已索引文档： "+doc.filePath);
     }
 //    public void delete(List<Doc> docs){
 //        
