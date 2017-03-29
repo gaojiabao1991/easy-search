@@ -8,7 +8,7 @@ import cn.sheeva.util.ResourceUtil;
 import cn.sheeva.util.TimeProfiler;
 
 public abstract class ASearcher {
-    protected File dir=new File(ResourceUtil.getResourcePath(Config.curConfigSet.getResource()));;
+    protected File dir=new File(Config.dataPath);
     
     public abstract void search(String word);
     

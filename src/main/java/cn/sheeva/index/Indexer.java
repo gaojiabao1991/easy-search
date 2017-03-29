@@ -26,10 +26,9 @@ public class Indexer implements IIndexer,Serializable{
     /**
      * 同一个indexName同一时间只能只能打开一个Indexer对象，否则可能会造成索引损坏
      * TODO 添加一个文件锁强制拒绝多个Indexer打开同一个索引
-     * @param indexName
      */
-    public Indexer(String indexName) {
-        indexPath=ResourceUtil.getResourcePath("index")+"/"+indexName+".index";
+    public Indexer(String indexPath) {
+        this.indexPath=indexPath;
         File indexFile=new File(indexPath);
         
         if (!indexFile.exists()) {
@@ -39,7 +38,7 @@ public class Indexer implements IIndexer,Serializable{
             try {
                 index = serializeUtil.deserialize(indexPath);
             } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException("read index file error : "+indexName);
+                throw new RuntimeException("read index file error : "+indexPath);
             }
             this.index=index;
         }
