@@ -3,11 +3,12 @@ package cn.sheeva;
 import java.io.File;
 import java.util.List;
 
+import cn.sheeva.config.Config;
 import cn.sheeva.util.ResourceUtil;
 import cn.sheeva.util.TimeProfiler;
 
 public abstract class ASearcher {
-    protected File dir=new File(ResourceUtil.getResourcePath("articles"));;
+    protected File dir=new File(ResourceUtil.getResourcePath(Config.curConfigSet.getResource()));;
     
     public abstract void search(String word);
     
@@ -17,7 +18,8 @@ public abstract class ASearcher {
         for (String word : searchWords) {
             search(word);
         }
-        System.out.println(getClass().getSimpleName()+"搜索用时："+TimeProfiler.end()+"\n\n");
+        long time=TimeProfiler.end();
+        System.out.println(getClass().getSimpleName()+"搜索用时："+time+"ms, ("+time/1000+"s)"+"\n\n");
         
     }
     

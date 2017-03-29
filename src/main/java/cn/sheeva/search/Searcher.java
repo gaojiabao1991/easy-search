@@ -20,11 +20,14 @@ public class Searcher {
      * @author: gaojiabao
      */
     public List<Doc> search(Index index,String word){
+        List<Doc> foundDocs=new LinkedList<>();
+
         TreeSet<Long> docIds=index.get(word);
         
-        List<Doc> foundDocs=new LinkedList<>();
-        for (Long docId : docIds) {
-            foundDocs.add(index.docIdMap.get(docId));
+        if (docIds!=null) {
+            for (Long docId : docIds) {
+                foundDocs.add(index.docIdMap.get(docId));
+            }
         }
         
         return foundDocs;

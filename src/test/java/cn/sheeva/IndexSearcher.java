@@ -10,6 +10,7 @@ import cn.sheeva.doc.Doc;
 import cn.sheeva.doc.DocIdMap;
 import cn.sheeva.index.Indexer;
 import cn.sheeva.search.Searcher;
+import cn.sheeva.util.TimeProfiler;
 import cn.sheeva.index.Index;
 
 public class IndexSearcher extends ASearcher {
@@ -37,6 +38,7 @@ public class IndexSearcher extends ASearcher {
     }
     
     public boolean index(){
+        TimeProfiler.begin();
         List<Doc> docs=new LinkedList<>();
         for (File file : dir.listFiles()) {
             Doc doc=new Doc(file.getPath());
@@ -49,7 +51,14 @@ public class IndexSearcher extends ASearcher {
             e.printStackTrace();
             return false;
         }
+        long time=TimeProfiler.end();
+        System.out.println("索引用时："+time+"ms, ("+time/1000+"s)"+"\n\n");
         return true;
     }
+    
+    public void deleteIndex(){
+        indexer.deleteIndex();
+    }
+    
 
 }

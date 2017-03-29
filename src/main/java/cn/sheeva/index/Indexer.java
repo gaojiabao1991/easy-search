@@ -43,8 +43,6 @@ public class Indexer implements IIndexer,Serializable{
             }
             this.index=index;
         }
-        
-        
     }
     
     /**
@@ -55,12 +53,17 @@ public class Indexer implements IIndexer,Serializable{
      */
     public synchronized void add(List<Doc> docs) throws IOException{
         for (Doc doc : docs) {
-            add(doc);
+            add2RAM(doc);
         }
         serializeUtil.serialize(this.index, indexPath);
     }
     
     public synchronized void add(Doc doc) throws IOException{
+        add2RAM(doc);
+        serializeUtil.serialize(this.index, indexPath);
+    }
+    
+    private synchronized void add2RAM(Doc doc)  throws IOException{
         long id=index.docIdMap.add(doc);
         
         List<String> lines=FileUtils.readLines(new File(doc.filePath));
@@ -76,9 +79,7 @@ public class Indexer implements IIndexer,Serializable{
                 }
             }
         }
-        serializeUtil.serialize(this.index, indexPath);
     }
-    
 //    public void delete(List<Doc> docs){
 //        
 //    }
@@ -93,6 +94,26 @@ public class Indexer implements IIndexer,Serializable{
     
     public synchronized void update(Doc doc){
         
+    }
+    
+    /**
+     * 删除索引文件
+     * @createTime：2017年3月29日 
+     * @author: gaojiabao
+     */
+    public synchronized void deleteIndex(){
+        /**
+         * 删除内存索引文件
+         */
+        this.index=new Index();
+        
+        /**
+         * 删除磁盘索引文件
+         */
+        File f=new File(indexPath);
+        if (f.exists()&&f.isFile()) {
+            f.delete();
+        }
     }
     
 }
