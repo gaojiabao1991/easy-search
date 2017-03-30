@@ -9,17 +9,11 @@ import java.util.TreeSet;
 import org.apache.commons.io.FileUtils;
 
 import cn.sheeva.doc.Doc;
-import cn.sheeva.doc.DocIdMap;
 import cn.sheeva.token.ITokenizer;
-import cn.sheeva.token.ComplexTokenizer;
-import cn.sheeva.util.ResourceUtil;
 import cn.sheeva.util.SerializeUtil;
 
 public class Indexer implements IIndexer,Serializable{
     private static final long serialVersionUID = 1L;
-
-    private String indexPath;
-    private SerializeUtil<Index> serializeUtil=new SerializeUtil<>();
 
     private ITokenizer tokenizer;
     public Index index;
@@ -28,23 +22,10 @@ public class Indexer implements IIndexer,Serializable{
      * 同一个indexName同一时间只能只能打开一个Indexer对象，否则可能会造成索引损坏
      * TODO 添加一个文件锁强制拒绝多个Indexer打开同一个索引
      */
-    public Indexer(String indexPath,ITokenizer tokenizer) {
+    public Indexer(String indexdir,String indexname,ITokenizer tokenizer) {
         this.tokenizer=tokenizer;
+        this.index=new Index(indexdir, indexname);
         
-        this.indexPath=indexPath;
-        File indexFile=new File(indexPath);
-        
-        if (!indexFile.exists()) {
-            index=new Index();
-        }else {
-            Index index;
-            try {
-                index = serializeUtil.deserialize(indexPath);
-            } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException("read index file error : "+indexPath);
-            }
-            this.index=index;
-        }
     }
     
     /**
@@ -58,29 +39,29 @@ public class Indexer implements IIndexer,Serializable{
             add2RAM(doc);
         }
         System.out.println("正在持久化索引到磁盘...");
-        serializeUtil.serialize(this.index, indexPath);
+        index.serialize();
         System.out.println("持久化索引到磁盘完成...");
     }
     
     public synchronized void add(Doc doc) throws IOException{
         add2RAM(doc);
-        serializeUtil.serialize(this.index, indexPath);
+        index.serialize();
     }
     
     private synchronized void add2RAM(Doc doc)  throws IOException{
         System.out.println(Runtime.getRuntime().freeMemory()/1000/1000);
-        long id=index.docIdMap.add(doc);
+        long id=index.docMap.add(doc);
         
         List<String> lines=FileUtils.readLines(new File(doc.filePath));
         for (String line : lines) {
             List<String> tokens=tokenizer.getTokens(line);
             for (String token : tokens) {
-                if (!index.containsKey(token)) {
+                if (!index.invertIndex.map.containsKey(token)) {
                     TreeSet<Long> docSet=new TreeSet<>();
                     docSet.add(id);
-                    index.put(token, docSet);
+                    index.invertIndex.map.put(token, docSet);
                 }else {
-                    index.get(token).add(id);
+                    index.invertIndex.map.get(token).add(id);
                 }
             }
         }
@@ -108,18 +89,7 @@ public class Indexer implements IIndexer,Serializable{
      * @author: gaojiabao
      */
     public synchronized void deleteIndex(){
-        /**
-         * 删除内存索引文件
-         */
-        this.index=new Index();
-        
-        /**
-         * 删除磁盘索引文件
-         */
-        File f=new File(indexPath);
-        if (f.exists()&&f.isFile()) {
-            f.delete();
-        }
+        index.clear();
     }
     
 }

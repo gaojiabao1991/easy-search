@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import cn.sheeva.doc.Doc;
-import cn.sheeva.doc.DocIdMap;
+import cn.sheeva.index.DocMap;
 import cn.sheeva.index.Index;
 import cn.sheeva.index.Indexer;
 
@@ -22,11 +22,11 @@ public class Searcher {
     public List<Doc> search(Index index,String word){
         List<Doc> foundDocs=new LinkedList<>();
 
-        TreeSet<Long> docIds=index.get(word);
+        TreeSet<Long> docIds=index.invertIndex.map.get(word);
         
         if (docIds!=null) {
             for (Long docId : docIds) {
-                foundDocs.add(index.docIdMap.get(docId));
+                foundDocs.add(index.docMap.get(docId));
             }
         }
         

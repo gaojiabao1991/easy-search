@@ -7,20 +7,20 @@ import java.util.List;
 import java.util.TreeSet;
 
 import cn.sheeva.doc.Doc;
-import cn.sheeva.doc.DocIdMap;
 import cn.sheeva.index.Indexer;
 import cn.sheeva.search.Searcher;
 import cn.sheeva.token.ComplexTokenizer;
 import cn.sheeva.token.SimpleTokenizer;
 import cn.sheeva.util.TimeProfiler;
+import cn.sheeva.index.DocMap;
 import cn.sheeva.index.Index;
 
 public class IndexSearcher extends ASearcher {
     private Indexer indexer;
     private Searcher searcher=new Searcher();
     
-    public IndexSearcher(String indexName) {
-        indexer=new Indexer(indexName,new SimpleTokenizer());
+    public IndexSearcher(String indexdir,String indexname) {
+        indexer=new Indexer(indexdir,indexname,new SimpleTokenizer());
     }
 
     @Override
