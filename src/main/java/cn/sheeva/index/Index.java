@@ -1,19 +1,18 @@
 package cn.sheeva.index;
 
-import java.io.File;
-import java.io.Serializable;
-
 public class Index{
-    private String invertIndexPath;
-    private String docMapPath;
-    
+    private String indexdir;
+    private String indexname;
     
     public InvertIndex invertIndex;
     public DocMap docMap;
     
     public Index(String indexdir,String indexname) {
-        invertIndexPath=indexdir+"/"+indexname+".index";
-        docMapPath=indexdir+"/"+indexname+".docmap";
+        this.indexdir=indexdir;
+        this.indexname=indexname;
+        
+        String invertIndexPath=indexdir+"/"+indexname+".index";
+        String docMapPath=indexdir+"/"+indexname+".docmap";
         
         invertIndex=new InvertIndex(invertIndexPath);
         docMap=new DocMap(docMapPath);
@@ -27,5 +26,9 @@ public class Index{
     public void clear(){
         invertIndex.clear();
         docMap.clear();
+    }
+    
+    public Index copy(){
+        return new Index(this.indexdir,this.indexname);
     }
 }

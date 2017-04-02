@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import cn.sheeva.doc.Doc;
@@ -17,19 +18,18 @@ import cn.sheeva.index.Index;
 
 public class IndexSearcher extends ASearcher {
     private Indexer indexer;
-    private Searcher searcher=new Searcher();
+    private Searcher searcher;
     
     public IndexSearcher(String indexdir,String indexname) {
         indexer=new Indexer(indexdir,indexname,new SimpleTokenizer());
+        deleteIndex();
+        index();
+        searcher=new Searcher(indexer.index);
     }
 
     @Override
-    public void search(String word) {
-        search(word,indexer.index);
-    }
-    
-    public void search(String word,Index index){
-        List<Doc> foundDocs=searcher.search(index, word);
+    public void search(String word){
+        List<Doc> foundDocs=searcher.search(word);
         
         List<String> foundFiles=new LinkedList<>();
         for (Doc doc : foundDocs) {

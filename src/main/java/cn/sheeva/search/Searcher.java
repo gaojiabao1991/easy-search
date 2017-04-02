@@ -11,6 +11,10 @@ import cn.sheeva.index.Index;
 import cn.sheeva.index.Indexer;
 
 public class Searcher {
+    private Index index;
+    public Searcher(Index index) {
+        this.index=index.copy();
+    }
     /**
      * 搜索
      * @param index 倒排索引
@@ -19,7 +23,7 @@ public class Searcher {
      * @createTime：2017年3月28日 
      * @author: gaojiabao
      */
-    public List<Doc> search(Index index,String word){
+    public List<Doc> search(String word){
         List<Doc> foundDocs=new LinkedList<>();
 
         TreeSet<Long> docIds=index.invertIndex.map.get(word);
