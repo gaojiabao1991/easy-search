@@ -7,23 +7,48 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class CommonTest {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
-        File file=new File("E:/程序数据/easy-search/data/500book/《冰屋》.txt");
-        BufferedReader reader=new BufferedReader(new FileReader(file));
+        final Test test=new Test();
         
-        File outFile=new File("C:/test.txt");
-        PrintWriter writer=new PrintWriter(new BufferedWriter(new FileWriter(outFile)));
-        while (reader.ready()) {
-            String line=reader.readLine();
-            System.out.println(line);
-            writer.println(line);
+        for (int i = 0; i < 50; i++) {
+            Thread a=new Thread(new Runnable() {
+                public void run() {
+                    for (int j = 0; j < 100; j++) {
+                        test.a();
+                    }
+                }
+            });
+            a.start();
             
+            Thread b=new Thread(new Runnable() {
+                public void run() {
+                    for (int j = 0; j < 100; j++) {
+                        test.b();
+                    }
+                }
+            });
+            b.start();
         }
-        reader.close();
-        writer.flush();
-        writer.close();
+    }
+    
+    
+    static class Test{
+        int a=0;
+        public synchronized void a(){
+            a+=1;
+            System.out.println(a);
+            a=0;
+        }
+        
+        public synchronized void b(){
+            a+=2;
+            System.out.println(a);
+            a=0;
+        }
     }
 }
 

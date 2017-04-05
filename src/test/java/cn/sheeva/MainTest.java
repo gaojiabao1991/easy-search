@@ -1,16 +1,29 @@
 package cn.sheeva;
 
+import org.junit.Test;
+
 import cn.sheeva.config.Config;
 
 public class MainTest {
+//    private String[] searchWords=new String[]{"搜索","地位"};
     
-    private static ScanSearcher scanSearcher=new ScanSearcher();
-    private static IndexSearcher indexSearcher=new IndexSearcher(Config.indexdir,Config.indexname);
+//    @Test
+//    public void scanSearcherTest(){
+//        ScanSearcher scanSearcher=new ScanSearcher();
+//        scanSearcher.showTimeProfiler(searchWords);
+//    }
+//    
+//    @Test
+//    public void indexSearcherTest(){
+//        IndexSearcher indexSearcher=new IndexSearcher(Config.indexdir,Config.indexname);
+//        indexSearcher.showTimeProfiler(searchWords);
+//    }
     
     public static void main(String[] args) {
-        String[] searchWords=new String[]{"搜索"};
-        
-//        scanSearcher.showTimeProfiler(searchWords);
+        String[] searchWords=new String[]{"搜索","地位"};
+        IndexSearcher indexSearcher=new IndexSearcher(Config.indexdir,Config.indexname);
         indexSearcher.showTimeProfiler(searchWords);
     }
+    
+    
 }

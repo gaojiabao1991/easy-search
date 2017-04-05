@@ -18,9 +18,24 @@ public class Index{
         docMap=new DocMap(docMapPath);
     }
     
-    public void serialize(){
-        invertIndex.serialize();
-        docMap.serialize();
+    public Index(String indexdir,String indexname,InvertIndex invertIndex,DocMap docMap){
+        this.indexdir=indexdir;
+        this.indexname=indexname;
+        this.invertIndex=invertIndex;
+        this.docMap=docMap;
+    }
+    
+    /**
+     * 合并内存索引到磁盘
+     * @createTime：2017年4月5日 
+     * @author: gaojiabao
+     */
+    public void persist(){
+        System.out.println("merge ram index to disk start...");
+        invertIndex.merge();
+        docMap.merge();
+        long freeRam=Runtime.getRuntime().freeMemory()/1000/1000;
+        System.out.println("merge ram index to disk complete, freeRam: "+freeRam);
     }
     
     public void clear(){
@@ -28,7 +43,8 @@ public class Index{
         docMap.clear();
     }
     
-    public Index copy(){
-        return new Index(this.indexdir,this.indexname);
+    public Index regenerate(){
+        Index copy= new Index(indexdir,indexname,invertIndex.copy(), docMap.copy());
+        return copy;
     }
 }

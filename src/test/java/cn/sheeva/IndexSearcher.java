@@ -10,8 +10,10 @@ import java.util.TreeSet;
 import cn.sheeva.doc.Doc;
 import cn.sheeva.index.Indexer;
 import cn.sheeva.search.Searcher;
+import cn.sheeva.search.SearcherPool;
 import cn.sheeva.token.ComplexTokenizer;
 import cn.sheeva.token.SimpleTokenizer;
+import cn.sheeva.util.LogUtil;
 import cn.sheeva.util.TimeProfiler;
 import cn.sheeva.index.DocMap;
 import cn.sheeva.index.Index;
@@ -24,7 +26,7 @@ public class IndexSearcher extends ASearcher {
         indexer=new Indexer(indexdir,indexname,new SimpleTokenizer());
         deleteIndex();
         index();
-        searcher=new Searcher(indexer.index);
+        searcher=SearcherPool.getSearcher(indexer.index);
     }
 
     @Override
@@ -39,23 +41,32 @@ public class IndexSearcher extends ASearcher {
         showResult(word, foundFiles);
     }
     
-    public boolean index(){
+    public void index(){
         TimeProfiler.begin();
+        int bulkThreshold=500;
+        int indexed=0;
         List<Doc> docs=new LinkedList<>();
         for (File file : dir.listFiles()) {
             Doc doc=new Doc(file.getPath());
             docs.add(doc);
+            if (docs.size()==bulkThreshold) {
+                try {
+                    indexer.add(docs);
+                } catch (IOException e) {
+                    LogUtil.err("add doc fail,docs: "+docs,e);
+                }
+                docs=new LinkedList<>();
+                indexed+=bulkThreshold;
+                System.err.println("===================已索引文档"+indexed+"篇");
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {Thread.currentThread().interrupt();}
+            }
         }
-        try {
-            indexer.add(docs);
-        } catch (IOException e) {
-            System.err.println("add doc fail,docs: "+docs);
-            e.printStackTrace();
-            return false;
-        }
+        
         long time=TimeProfiler.end();
+        indexer.hardCommit();
         System.out.println("索引用时："+time+"ms, ("+time/1000+"s)"+"\n\n");
-        return true;
     }
     
     public void deleteIndex(){

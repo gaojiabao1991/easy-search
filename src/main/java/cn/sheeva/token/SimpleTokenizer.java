@@ -43,6 +43,6 @@ public class SimpleTokenizer implements ITokenizer{
     } 
 
     public static void main(String[] args) throws JcsegException, IOException {
-        
+        System.out.println(new SimpleTokenizer().getTokens("荀太太也在搜索枯肠，找没告诉过她的事。"));;
     }
 }
