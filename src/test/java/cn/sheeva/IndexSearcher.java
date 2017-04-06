@@ -24,8 +24,8 @@ public class IndexSearcher extends ASearcher {
     
     public IndexSearcher(String indexdir,String indexname) {
         indexer=new Indexer(indexdir,indexname,new SimpleTokenizer());
-//        deleteIndex();
-//        index();
+        deleteIndex();
+        index();
         searcher=SearcherPool.getSearcher(indexer.index);
     }
 

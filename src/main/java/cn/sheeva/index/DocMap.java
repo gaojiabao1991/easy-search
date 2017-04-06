@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -19,7 +20,7 @@ public class DocMap{
     private String path;
     
     private Long nextId=0l;
-    private TreeMap<Long, Doc> ram=new TreeMap<>();
+    private HashMap<Long, Doc> ram=new HashMap<>();
     
     private final String separator="\t";
     
@@ -96,7 +97,7 @@ public class DocMap{
     }
     public synchronized void clear(){
         nextId=0l;
-        ram=new TreeMap<>();
+        ram=new HashMap<>();
         File f=new File(path);
         f.delete();
     }
@@ -111,7 +112,7 @@ public class DocMap{
     
     public DocMap copy(){
         DocMap copy=new DocMap(this.path,false);
-        copy.ram=new TreeMap<>(this.ram);
+        copy.ram=new HashMap<>(this.ram);
         return copy;
     }
     
