@@ -3,14 +3,10 @@ package cn.sheeva.index;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -27,69 +23,20 @@ public class DocMap{
     
     private final String separator="\t";
     
-    public DocMap(String path) {
+    public DocMap(String path,boolean loadDisk) {
         this.path=path;
-        getNextIdFromDisk(path);
-    }
-    
-    public DocMap(String path,Long nextId){
-        this.path=path;
-        this.nextId=nextId;
-    }
-    
-    private void getNextIdFromDisk(String path) {
-        if (new File(path).exists()) {
-            File f=new File(path);
-            BufferedReader reader=null;
-            try {
-                reader=new BufferedReader(new FileReader(f));
-                nextId=Long.parseLong(reader.readLine());
-            } catch (Exception e) {
-                LogUtil.err("read file fail: "+path, e);
-            }finally {
-                if (reader!=null) {
-                    try {
-                        reader.close();
-                    } catch (IOException e) {
-                        LogUtil.err("release resource fail: "+path, e);
-                    }
-                }
-            }
-        }
-    }
-    
-    public Doc get(long id){
-//      return ram.get(id);
-        if (ram.containsKey(id)) {
-            return ram.get(id);
-        }else {
-            Doc doc= getFromDisk(id);
-            if (doc==null) {
-                throw new RuntimeException("get doc fail,docId: "+id);
-            }
-            return doc;
-        }
-        
-    }
-    
-    private Doc getFromDisk(long id){
         File f=new File(path);
-        if (f.exists()) {
+        if (loadDisk&&f.exists()) {
             try {
                 BufferedReader reader=new BufferedReader(new FileReader(f));
                 try {
-                    reader.readLine(); //skip first line: nextId
+                    nextId=Long.parseLong(reader.readLine());
                     String line;
                     while ((line=reader.readLine())!=null) {
                         String[] a=line.split(separator);
-                        long diskId=Long.parseLong(a[1]);
-                        if (diskId==id) {
-                            Doc doc=new Doc(a[2]);
-                            doc.id=diskId;
-                            return doc;
-                        }else if (diskId>id) {
-                            break;
-                        }
+                        long id=Long.parseLong(a[0]);
+                        String docPath=a[2];
+                        ram.put(id, new Doc(id, docPath));
                     }
                 } catch (Exception e) {throw e;}
                 finally {
@@ -101,76 +48,44 @@ public class DocMap{
                 LogUtil.err("read file error: "+path, e);
             }
         }
-        return null;
     }
+    
+    
+    public Doc get(long id){
+        return ram.get(id);
+    }
+    
     
     public synchronized void merge(){
         File f=new File(path);
-        if (f.exists()) {
-            String outPath=path+".temp";
-            File outFile=new File(outPath);
-            
-            Map<Long, Doc> ramSnapshot=null;
-            ramSnapshot=ram;
-            ram=new TreeMap<>();
-            
-            BufferedReader reader=null;
-            PrintWriter writer=null;
-            try {
-                reader=new BufferedReader(new FileReader(f));
-                writer=new PrintWriter(new BufferedWriter(new FileWriter(outFile)));
-                
-                writer.println(nextId.toString());
-                
-                String line="";
-                reader.readLine();//skip nextId
-                while ((line=reader.readLine())!=null) {
-                    writer.println(line);
-                }
-                
-                for (Entry<Long, Doc> entry : ramSnapshot.entrySet()) {
-                    String ramLine=this.convertEntry2line(entry);
-                    writer.println(ramLine);
-                }
-            } catch (Exception e) {
-                LogUtil.err("merge ram docmap and disk docmap fail.", e);
-            }finally {
-                try {
-                    if (reader!=null) {
-                        reader.close();
-                    }
-                    if (writer!=null) {
-                        writer.close();
-                    }
-                } catch (Exception e2) {LogUtil.err("release resource fail.", e2);}               
+        String outPath=path+".temp";
+        File outFile=new File(outPath);
+        
+        Map<Long, Doc> ramSnapshot=null;
+        ramSnapshot=ram;
+        
+        PrintWriter writer=null;
+        try {
+            writer=new PrintWriter(new BufferedWriter(new FileWriter(outFile)));
+            writer.println(nextId);
+            for (Entry<Long, Doc> entry:ramSnapshot.entrySet()) {
+                String line=this.convertEntry2line(entry);
+                writer.println(line);
             }
-            
-            f.delete();
-            if (!outFile.renameTo(new File(path))) {
-                throw new RuntimeException("rename temp file fail.");
-            }
-        }else {
-            Map<Long, Doc> ramSnapshot=ram;
-            ram=new TreeMap<>();
-            PrintWriter writer=null;
-            try {
-                writer=new PrintWriter(new BufferedWriter(new FileWriter(f)));
-                writer.println(nextId);
-                for (Entry<Long, Doc> entry:ramSnapshot.entrySet()) {
-                    String line=this.convertEntry2line(entry);
-                    writer.println(line);
-                }
-            } 
-            catch (Exception e) {
-                LogUtil.err("sava ram docmap to disk fail", e);
-            } 
-            finally {
-                if (writer!=null) {
-                    writer.close();
-                }
+        } 
+        catch (Exception e) {
+            LogUtil.err("sava ram docmap to disk fail", e);
+        } 
+        finally {
+            if (writer!=null) {
+                writer.close();
             }
         }
+        
+        f.delete();
+        outFile.renameTo(new File(path));
     }
+    
     
     private String convertEntry2line(Entry<Long, Doc> entry){
         StringBuffer line=new StringBuffer();
@@ -179,7 +94,6 @@ public class DocMap{
         line.append(entry.getValue().filePath);
         return line.toString();
     }
-    
     public synchronized void clear(){
         nextId=0l;
         ram=new TreeMap<>();
@@ -196,7 +110,7 @@ public class DocMap{
     }
     
     public DocMap copy(){
-        DocMap copy=new DocMap(this.path, this.nextId);
+        DocMap copy=new DocMap(this.path,false);
         copy.ram=new TreeMap<>(this.ram);
         return copy;
     }

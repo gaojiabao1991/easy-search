@@ -15,7 +15,7 @@ public class Index{
         String docMapPath=indexdir+"/"+indexname+".docmap";
         
         invertIndex=new InvertIndex(invertIndexPath);
-        docMap=new DocMap(docMapPath);
+        docMap=new DocMap(docMapPath,true);
     }
     
     public Index(String indexdir,String indexname,InvertIndex invertIndex,DocMap docMap){
@@ -43,7 +43,7 @@ public class Index{
         docMap.clear();
     }
     
-    public Index regenerate(){
+    public Index copy(){
         Index copy= new Index(indexdir,indexname,invertIndex.copy(), docMap.copy());
         return copy;
     }

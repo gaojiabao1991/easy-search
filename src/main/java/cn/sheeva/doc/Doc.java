@@ -7,6 +7,11 @@ public class Doc{
     public long id;
     public String filePath;
     
+    public Doc(long id,String filePath){
+        this.id=id;
+        this.filePath=filePath;
+    }
+    
     public Doc(String filePath) {
         this.filePath=filePath;
     }

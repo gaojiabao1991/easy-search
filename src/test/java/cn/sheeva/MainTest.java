@@ -20,7 +20,7 @@ public class MainTest {
 //    }
     
     public static void main(String[] args) {
-        String[] searchWords=new String[]{"搜索","地位"};
+        String[] searchWords=new String[]{"搜索"};
         IndexSearcher indexSearcher=new IndexSearcher(Config.indexdir,Config.indexname);
         indexSearcher.showTimeProfiler(searchWords);
     }

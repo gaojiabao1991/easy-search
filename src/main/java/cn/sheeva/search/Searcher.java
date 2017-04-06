@@ -6,11 +6,12 @@ import java.util.TreeSet;
 
 import cn.sheeva.doc.Doc;
 import cn.sheeva.index.Index;
+import cn.sheeva.util.LogUtil;
 
 public class Searcher {
     private Index index;
     public Searcher(Index index) {
-        this.index=index.regenerate();
+        this.index=index.copy();
     }
     
     public List<Doc> search(String word){
@@ -20,7 +21,12 @@ public class Searcher {
         
         if (docIds!=null) {
             for (Long docId : docIds) {
-                foundDocs.add(index.docMap.get(docId));
+                Doc doc=index.docMap.get(docId);
+                if (doc!=null) {
+                    foundDocs.add(doc);
+                }else {
+                    LogUtil.err("can't get doc from docMap,id: "+docId);
+                }
             }
         }
         
