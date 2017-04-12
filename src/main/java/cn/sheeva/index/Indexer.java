@@ -36,17 +36,17 @@ public class Indexer implements IIndexer,Serializable{
      * @createTime：2017年3月27日 
      * @author: gaojiabao
      */
-    public synchronized void add(List<Doc> docs) throws IOException{
+    public synchronized void add(List<Doc> docs){
         for (Doc doc : docs) {
             add2RAM(doc);
         }
     }
     
-    public synchronized void add(Doc doc) throws IOException{
+    public synchronized void add(Doc doc){
         add2RAM(doc);
     }
     
-    private synchronized void add2RAM(Doc doc)  throws IOException{
+    private synchronized void add2RAM(Doc doc) {
         long freeRam=Runtime.getRuntime().freeMemory()/1000/1000;
         if (freeRam<Config.autoCommitRamThreshold) {
             System.out.println("freeRam: "+freeRam);
@@ -55,7 +55,12 @@ public class Indexer implements IIndexer,Serializable{
         }
         
         long id=index.docMap.add(doc);
-        List<String> lines=FileUtils.readLines(new File(doc.filePath));
+        List<String> lines;
+        try {
+            lines = FileUtils.readLines(new File(doc.filePath));
+        } catch (IOException e) {
+            throw new RuntimeException("open doc file fail: "+doc.filePath);
+        }
         for (String line : lines) {
             if (StringUtils.isNotEmpty(line)) {
                 List<String> tokens=tokenizer.getTokens(line);

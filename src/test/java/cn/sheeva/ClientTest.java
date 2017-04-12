@@ -34,11 +34,7 @@ public class ClientTest {
             Doc doc=new Doc(file.getPath());
             docs.add(doc);
             if (docs.size()==bulkThreshold) {
-                try {
-                    indexer.add(docs);
-                } catch (IOException e) {
-                    LogUtil.err("add doc fail,docs: "+docs,e);
-                }
+                indexer.add(docs);
                 docs=new LinkedList<>();
                 indexed+=bulkThreshold;
                 System.err.println("===================已索引文档"+indexed+"篇");
@@ -46,6 +42,11 @@ public class ClientTest {
                     Thread.sleep(2000);
                 } catch (InterruptedException e) {Thread.currentThread().interrupt();}
             }
+        }
+        if (!docs.isEmpty()) {
+            indexer.add(docs);
+            indexed+=docs.size();
+            System.err.println("===================已索引文档"+indexed+"篇");
         }
         
         long time=TimeProfiler.end();
@@ -57,8 +58,8 @@ public class ClientTest {
         String word="搜索";
         Indexer indexer=new Indexer(TestConfig.indexdir, TestConfig.indexname, new SimpleTokenizer());
         
-//        indexer.deleteIndex();
-//        index(TestConfig.dataPath, indexer);
+        indexer.deleteIndex();
+        index(TestConfig.dataPath, indexer);
         
         TimeProfiler.begin();
         List<Doc> foundDocs=search(word, indexer.index);
