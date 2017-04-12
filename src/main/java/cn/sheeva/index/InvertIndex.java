@@ -3,24 +3,19 @@ package cn.sheeva.index;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Serializable;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
-
-import cn.sheeva.util.LogUtil;
-
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+import cn.sheeva.util.LogUtil;
 
 public class InvertIndex{
     private String path;
@@ -34,7 +29,7 @@ public class InvertIndex{
     
     public TreeSet<Long> get(String word){
         TreeSet<Long> ramSet=getFromRam(word);
-        TreeSet<Long> diskSet=getFromDisk(word);
+        List<Long> diskSet=getFromDisk(word);
         
         TreeSet<Long> union=new TreeSet<>();
         if (ramSet!=null) {
@@ -50,7 +45,7 @@ public class InvertIndex{
         return ram.get(word);
     }
     
-    private TreeSet<Long> getFromDisk(String word){
+    private List<Long> getFromDisk(String word){
         File f=new File(path);
         if (f.exists()) {
             try {
@@ -89,31 +84,32 @@ public class InvertIndex{
         return ram.containsKey(word);
     }
     
-    private TreeSet<Long> convertLine2DocIds(String line){
+    private List<Long> convertLine2DocIds(String line){
         String[] a=line.split(separator1);
         
-        TreeSet<Long> docIdsSet=new TreeSet<>();
-        String[] docIds=a[1].split(separator2);
-        for (String docId : docIds) {
-            docIdsSet.add(Long.parseLong(docId));
+        List<Long> deltasList=new LinkedList<>();
+        String[] deltas=a[1].split(separator2);
+        for (String delta : deltas) {
+            deltasList.add(Long.parseLong(delta));
         }
         
-        return docIdsSet;
+        List<Long> docIds=InvertIndexCompresser.decompressDocIds(deltasList);
+        return docIds;
     }
     
-    private String convertIndex2Line(String word,TreeSet<Long> docIdsSet){
+    private String convertIndex2Line(String word,Collection<Long> docIdsSet){
         StringBuffer line=new StringBuffer();
         line.append(word);
         line.append(separator1);
-        
-        List<String> docIds=new LinkedList<>();
-        for (Long docId : docIdsSet) {
-            docIds.add(docId.toString());
+
+        List<Long> compressed=InvertIndexCompresser.compressDocIds(docIdsSet);
+        List<String> deltas=new LinkedList<>();
+        for (Long delta : compressed) {
+            deltas.add(delta.toString());
         }
-        line.append(String.join(separator2, docIds));
+        line.append(String.join(separator2, deltas));
         return line.toString();
     }
-    
     
     public synchronized void merge(){
         File f=new File(path);
@@ -143,7 +139,7 @@ public class InvertIndex{
                     int c=ramWord.compareTo(diskWord);
                     if (c==0) {
                         TreeSet<Long> ramDocIds=entry.getValue();
-                        TreeSet<Long> diskDocIds=this.convertLine2DocIds(line);
+                        List<Long> diskDocIds=this.convertLine2DocIds(line);
                         TreeSet<Long> union=new TreeSet<>(ramDocIds);
                         union.addAll(diskDocIds);
                         out=this.convertIndex2Line(ramWord, union);
@@ -219,5 +215,30 @@ public class InvertIndex{
         InvertIndex copy=new InvertIndex(this.path);
         copy.ram=new TreeMap<>(this.ram);
         return copy;
+    }
+    
+    private static class InvertIndexCompresser{
+        private static List<Long> compressDocIds(Collection<Long> docIdsSet){
+            LinkedList<Long> compressed=new LinkedList<>();
+            long lastId=0l;
+            for (Long docId : docIdsSet) {
+                Long delta=docId-lastId;
+                compressed.add(delta);
+                lastId=docId;
+            }
+            return compressed;
+        }
+        
+        private static List<Long> decompressDocIds(List<Long> deltas){
+            long lastId=0l;
+            List<Long> docIds=new LinkedList<>();
+            
+            for (Long delta : deltas) {
+                long docId=lastId+delta;
+                docIds.add(docId);
+                lastId=docId;
+            }
+            return docIds;
+        }
     }
 }
