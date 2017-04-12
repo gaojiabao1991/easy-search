@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+@Deprecated
 public class VariableByte {
     private List<Byte> bytes=new LinkedList<>();
     

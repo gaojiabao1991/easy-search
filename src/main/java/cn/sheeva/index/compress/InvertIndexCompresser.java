@@ -27,12 +27,4 @@ public class InvertIndexCompresser {
         }
         return docIds;
     }
-    
-    public static List<VariableByte> getVariableBytes(List<Long> deltas){
-        List<VariableByte> bytes=new LinkedList<>();
-        for (Long delta : deltas) {
-            bytes.add(new VariableByte(delta));
-        }
-        return bytes;
-    }
 }
