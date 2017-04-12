@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import cn.sheeva.index.compress.InvertIndexCompresser;
 import cn.sheeva.util.LogUtil;
 
 public class InvertIndex{
@@ -93,7 +94,7 @@ public class InvertIndex{
             deltasList.add(Long.parseLong(delta));
         }
         
-        List<Long> docIds=InvertIndexCompresser.decompressDocIds(deltasList);
+        List<Long> docIds=InvertIndexCompresser.getDocIdsDeltas(deltasList);
         return docIds;
     }
     
@@ -102,7 +103,7 @@ public class InvertIndex{
         line.append(word);
         line.append(separator1);
 
-        List<Long> compressed=InvertIndexCompresser.compressDocIds(docIdsSet);
+        List<Long> compressed=InvertIndexCompresser.getDocIdsDeltas(docIdsSet);
         List<String> deltas=new LinkedList<>();
         for (Long delta : compressed) {
             deltas.add(delta.toString());
@@ -110,7 +111,7 @@ public class InvertIndex{
         line.append(String.join(separator2, deltas));
         return line.toString();
     }
-    
+     
     public synchronized void merge(){
         File f=new File(path);
         if (f.exists()) {
@@ -215,30 +216,5 @@ public class InvertIndex{
         InvertIndex copy=new InvertIndex(this.path);
         copy.ram=new TreeMap<>(this.ram);
         return copy;
-    }
-    
-    private static class InvertIndexCompresser{
-        private static List<Long> compressDocIds(Collection<Long> docIdsSet){
-            LinkedList<Long> compressed=new LinkedList<>();
-            long lastId=0l;
-            for (Long docId : docIdsSet) {
-                Long delta=docId-lastId;
-                compressed.add(delta);
-                lastId=docId;
-            }
-            return compressed;
-        }
-        
-        private static List<Long> decompressDocIds(List<Long> deltas){
-            long lastId=0l;
-            List<Long> docIds=new LinkedList<>();
-            
-            for (Long delta : deltas) {
-                long docId=lastId+delta;
-                docIds.add(docId);
-                lastId=docId;
-            }
-            return docIds;
-        }
     }
 }
