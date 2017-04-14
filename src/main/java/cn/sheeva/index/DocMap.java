@@ -8,8 +8,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
 import cn.sheeva.doc.Doc;
@@ -54,6 +56,10 @@ public class DocMap{
     
     public Doc get(long id){
         return ram.get(id);
+    }
+    
+    public Set<Long> getAllIds(){
+        return ram.keySet();
     }
     
     

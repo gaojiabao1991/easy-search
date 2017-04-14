@@ -16,4 +16,8 @@ public class Doc{
         this.filePath=filePath;
     }
     
+    @Override
+    public String toString() {
+        return filePath;
+    }
 }

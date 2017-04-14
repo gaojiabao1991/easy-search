@@ -14,14 +14,7 @@ import cn.sheeva.token.SimpleTokenizer;
 import cn.sheeva.util.LogUtil;
 import cn.sheeva.util.TimeProfiler;
 
-public class ClientTest {
-    
-    private static List<Doc> search(String word,Index index){
-        Searcher searcher=SearcherPool.getSearcher(index);
-        List<Doc> foundDocs=searcher.search(word);
-        return foundDocs;
-        
-    }
+public class IndexTest {
     
     public static void index(String dataPath,Indexer indexer){
         TimeProfiler.begin();
@@ -55,20 +48,9 @@ public class ClientTest {
     }
     
     public static void main(String[] args) {
-        String word="搜索";
         Indexer indexer=new Indexer(TestConfig.indexdir, TestConfig.indexname, new SimpleTokenizer());
         
         indexer.deleteIndex();
         index(TestConfig.dataPath, indexer);
-        
-        TimeProfiler.begin();
-        List<Doc> foundDocs=search(word, indexer.index);
-        long time=TimeProfiler.end();
-        
-        System.out.println("====================搜索结果列表：===========================");
-        for (Doc doc : foundDocs) {
-            System.out.println(new File(doc.filePath).getName());
-        }
-        System.out.println("============搜索词：‘"+word+"’, 搜索用时："+time+"ms("+time/1000+"s)"+",找到文档"+foundDocs.size()+" 篇===========");
     }
 }
