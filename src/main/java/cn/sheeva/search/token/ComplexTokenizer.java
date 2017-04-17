@@ -1,4 +1,4 @@
-package cn.sheeva.token;
+package cn.sheeva.search.token;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -13,14 +13,14 @@ import org.lionsoul.jcseg.tokenizer.core.JcsegException;
 import org.lionsoul.jcseg.tokenizer.core.JcsegTaskConfig;
 import org.lionsoul.jcseg.tokenizer.core.SegmentFactory;
 
-public class SimpleTokenizer implements ITokenizer{
+public class ComplexTokenizer implements ITokenizer{
     private static JcsegTaskConfig config = new JcsegTaskConfig();
     private static ADictionary dic = DictionaryFactory.createSingletonDictionary(config);
     
     private ASegment seg;
-    public SimpleTokenizer() {
+    public ComplexTokenizer() {
         try {
-            seg=(ASegment) SegmentFactory.createJcseg(JcsegTaskConfig.SIMPLE_MODE, new Object[] { config, dic });
+            seg=(ASegment) SegmentFactory.createJcseg(JcsegTaskConfig.COMPLEX_MODE, new Object[] { config, dic });
         } catch (JcsegException e) {
             throw new RuntimeException("Unknown exception when create Asegment");
         }
@@ -43,6 +43,6 @@ public class SimpleTokenizer implements ITokenizer{
     } 
 
     public static void main(String[] args) throws JcsegException, IOException {
-        System.out.println(new SimpleTokenizer().getTokens("荀太太也在搜索枯肠，找没告诉过她的事。"));;
+        System.out.println(new ComplexTokenizer().getTokens("荀太太也在搜索枯肠，找没告诉过她的事。"));;
     }
 }

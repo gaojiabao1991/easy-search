@@ -16,7 +16,7 @@ public class InvertIndexCompresser {
         return compressed;
     }
 
-    public static List<Long> getDocIdsDeltas(List<Long> deltas) {
+    public static List<Long> getDocIds(List<Long> deltas) {
         long lastId = 0l;
         List<Long> docIds = new LinkedList<>();
 

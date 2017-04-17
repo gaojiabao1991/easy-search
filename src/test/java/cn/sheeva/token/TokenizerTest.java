@@ -1,6 +1,11 @@
 package cn.sheeva.token;
 
+import java.util.List;
+
+import org.junit.Assert;
 import org.junit.Test;
+
+import cn.sheeva.search.token.ComplexTokenizer;
 
 public class TokenizerTest {
     /**
@@ -10,20 +15,9 @@ public class TokenizerTest {
      */
     @Test
     public void tokenTest(){
-        for (int i = 0; i < 100; i++) {
-            Thread t=new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    ComplexTokenizer tokenizer=new ComplexTokenizer();
-                    for (int j = 0; j < 1000; j++) {
-                        System.out.println(tokenizer.getTokens("搜索互联网search"));
-                    }
-                }
-            });
-            t.start();
-        }
-        while (Thread.currentThread().getThreadGroup().activeCount()>2) {
-            Thread.currentThread().yield();
-        }
+        ComplexTokenizer tokenizer=new ComplexTokenizer();
+        List<String> tokens=tokenizer.getTokens("搜索互联网search\n我爱中国");
+        Assert.assertEquals("[搜索, 互联网, search, 我, 爱, 中国]", tokens.toString());
+        
     }
 }

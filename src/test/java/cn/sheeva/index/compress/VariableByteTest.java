@@ -18,13 +18,5 @@ public class VariableByteTest {
         //00000110 10111000
         Assert.assertEquals("110 10111000", new VariableByte(b).getVbString());
         
-        List<Byte> bytesList=new VariableByte(a).getBytes();
-        byte[] bytes=new byte[bytesList.size()];
-        for (int i = 0; i < bytesList.size(); i++) {
-            bytes[i]=bytesList.get(i);
-        }
-        
-        String s=new String(bytes);
-        System.out.println(s);
     }
 }

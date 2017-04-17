@@ -14,21 +14,50 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javax.sound.sampled.Line;
+
+import org.apache.commons.io.FileUtils;
+
 import cn.sheeva.doc.Doc;
 import cn.sheeva.util.LogUtil;
+import cn.sheeva.util.SerializeUtil;
+import cn.sheeva.util.SerializeXmlUtil;
 
 public class DocMap{
     
-    private String path;
+    private String indexdir;
+    private String indexname;
+    
+    private String filePath;
+    private String storePath;
     
     private Long nextId=0l;
     private HashMap<Long, Doc> ram=new HashMap<>();
     
     private final String separator="\t";
     
-    public DocMap(String path,boolean loadDisk) {
-        this.path=path;
-        File f=new File(path);
+    private SerializeUtil<Doc> serializeUtil=new SerializeUtil<>();
+    
+    public DocMap(String indexdir, String indexname ,boolean loadDisk) {
+        this.indexdir=indexdir;
+        this.indexname=indexname;
+        
+        String rootPath=indexdir+"/"+indexname+"/";
+        File rootDir=new File(rootPath);
+        if (!rootDir.exists()) {
+            rootDir.mkdirs();
+        }
+        
+        this.filePath=rootPath+"docmap";
+        
+        this.storePath=rootPath+"store/";
+        
+        File storeDir=new File(storePath);
+        if (!storeDir.exists()) {
+            storeDir.mkdirs();
+        }
+        
+        File f=new File(filePath);
         if (loadDisk&&f.exists()) {
             try {
                 BufferedReader reader=new BufferedReader(new FileReader(f));
@@ -48,7 +77,7 @@ public class DocMap{
                     } catch (IOException e) {throw e;}                    
                 }
             } catch (Exception e) {
-                LogUtil.err("read file error: "+path, e);
+                LogUtil.err("read file error: "+filePath, e);
             }
         }
     }
@@ -64,8 +93,8 @@ public class DocMap{
     
     
     public synchronized void merge(){
-        File f=new File(path);
-        String outPath=path+".temp";
+        File f=new File(filePath);
+        String outPath=filePath+".temp";
         File outFile=new File(outPath);
         
         Map<Long, Doc> ramSnapshot=null;
@@ -90,7 +119,7 @@ public class DocMap{
         }
         
         f.delete();
-        outFile.renameTo(new File(path));
+        outFile.renameTo(new File(filePath));
     }
     
     
@@ -101,25 +130,43 @@ public class DocMap{
         line.append(entry.getValue().filePath);
         return line.toString();
     }
+    
     public synchronized void clear(){
         nextId=0l;
         ram=new HashMap<>();
-        File f=new File(path);
+        File f=new File(filePath);
         f.delete();
     }
     
     public synchronized long add(Doc doc){
         long id=nextId;
         doc.id=id;
+        doc.filePath=storePath+doc.id;
+        
+        writeStoreFile(doc);    //store file
+                
         ram.put(id, doc);
         nextId++;
         return id;
     }
+
+
+    private void writeStoreFile(Doc doc) {
+        try {
+            serializeUtil.serialize(doc, doc.filePath);
+        } catch (IOException e) {
+            LogUtil.err("write store file fail: "+doc.filePath, e);
+        }
+    }
     
     public DocMap copy(){
-        DocMap copy=new DocMap(this.path,false);
+        DocMap copy=new DocMap(this.indexdir,this.indexname,false);
         copy.ram=new HashMap<>(this.ram);
         return copy;
+    }
+    
+    public String getStorePath() {
+        return storePath;
     }
     
 }

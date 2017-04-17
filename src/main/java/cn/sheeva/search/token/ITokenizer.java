@@ -1,4 +1,4 @@
-package cn.sheeva.token;
+package cn.sheeva.search.token;
 
 import java.util.List;
 

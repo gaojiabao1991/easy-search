@@ -18,7 +18,11 @@ public class WordAST extends ABooleanQueryAST {
 
     @Override
     public Set<Long> getMatchDocIds(Index index) {
-        return index.invertIndex.get(word);
+        String[] arr=word.split(":");
+        String field=arr[0];
+        String value=arr[1];
+        
+        return index.invertIndexCollection.get(field).get(value);
     }
     
     

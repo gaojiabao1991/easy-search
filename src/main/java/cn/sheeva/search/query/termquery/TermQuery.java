@@ -10,8 +10,11 @@ import cn.sheeva.search.query.IQuery;
 import cn.sheeva.util.LogUtil;
 
 public class TermQuery implements IQuery {
+    private String field;
     private String term;
-    public TermQuery(String term) {
+    
+    public TermQuery(String field,String term) {
+        this.field=field;
         this.term=term;
     }
 
@@ -19,7 +22,7 @@ public class TermQuery implements IQuery {
     public List<Doc> query(Index index) {
         List<Doc> foundDocs=new LinkedList<>();
 
-        TreeSet<Long> docIds=index.invertIndex.get(term);
+        TreeSet<Long> docIds=index.invertIndexCollection.get(field).get(term);
         
         if (docIds!=null) {
             for (Long docId : docIds) {

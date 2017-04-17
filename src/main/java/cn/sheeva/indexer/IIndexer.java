@@ -1,4 +1,4 @@
-package cn.sheeva.index;
+package cn.sheeva.indexer;
 
 import java.io.IOException;
 import java.util.List;

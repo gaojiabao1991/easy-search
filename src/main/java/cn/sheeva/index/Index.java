@@ -1,27 +1,35 @@
 package cn.sheeva.index;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
+
+import cn.sheeva.doc.field.Field;
+import cn.sheeva.doc.field.def.FieldDef;
+import cn.sheeva.index.invertindex.InvertIndexCollection;
+
 public class Index{
     private String indexdir;
     private String indexname;
     
-    public InvertIndex invertIndex;
+    @SuppressWarnings("rawtypes")
+    public InvertIndexCollection invertIndexCollection;
     public DocMap docMap;
     
-    public Index(String indexdir,String indexname) {
+    public Index(String indexdir,String indexname,FieldDef... fieldDefs) {
         this.indexdir=indexdir;
         this.indexname=indexname;
         
-        String invertIndexPath=indexdir+"/"+indexname+".index";
-        String docMapPath=indexdir+"/"+indexname+".docmap";
+        docMap=new DocMap(indexdir,indexname,true);
         
-        invertIndex=new InvertIndex(invertIndexPath);
-        docMap=new DocMap(docMapPath,true);
+        invertIndexCollection=new InvertIndexCollection(indexdir, indexname, fieldDefs);
+        
     }
     
-    public Index(String indexdir,String indexname,InvertIndex invertIndex,DocMap docMap){
+    public Index(String indexdir,String indexname,InvertIndexCollection invertIndexCollection,DocMap docMap){
         this.indexdir=indexdir;
         this.indexname=indexname;
-        this.invertIndex=invertIndex;
+        this.invertIndexCollection=invertIndexCollection;
         this.docMap=docMap;
     }
     
@@ -32,19 +40,19 @@ public class Index{
      */
     public void persist(){
         System.out.println("merge ram index to disk start...");
-        invertIndex.merge();
+        invertIndexCollection.merge();
         docMap.merge();
         long freeRam=Runtime.getRuntime().freeMemory()/1000/1000;
         System.out.println("merge ram index to disk complete, freeRam: "+freeRam);
     }
     
     public void clear(){
-        invertIndex.clear();
+        invertIndexCollection.clear();
         docMap.clear();
     }
     
     public Index copy(){
-        Index copy= new Index(indexdir,indexname,invertIndex.copy(), docMap.copy());
+        Index copy= new Index(indexdir,indexname,invertIndexCollection.copy(), docMap.copy());
         return copy;
     }
 }
