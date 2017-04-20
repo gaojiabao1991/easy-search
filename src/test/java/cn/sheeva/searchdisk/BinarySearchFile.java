@@ -1,4 +1,4 @@
-package cn.sheeva.common;
+package cn.sheeva.searchdisk;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -52,7 +52,7 @@ public class BinarySearchFile {
      * @author: gaojiabao
      */
     private Line getLine(MappedByteBuffer mbb, int index, int start, int end) {
-        if (start>end) {
+        if (start>=end) {
             return null;
         }
         int indexl=index;
@@ -111,7 +111,7 @@ public class BinarySearchFile {
     
     @Test
     public void matchTest() throws IOException{
-        File f = new File("C:/Users/sheeva/Desktop/title.index");
+        File f = new File("E:/程序数据/easy-search/test/title.index");
         BufferedReader reader=new BufferedReader(new FileReader(f));
         String line;
         
@@ -123,12 +123,13 @@ public class BinarySearchFile {
             mbb.clear();
             Assert.assertEquals(true, binaryFind(mbb, 0, mbb.limit(), word));
         }
+        reader.close();
         fc.close();
     }
     
     @Test
     public void notMatchTest() throws IOException{
-        File f = new File("C:/Users/sheeva/Desktop/title.index");
+        File f = new File("E:/程序数据/easy-search/test/title.index");
         String[] words=new String[]{"AAA","搜索","红楼"};
         FileChannel fc = new FileInputStream(f).getChannel();
         MappedByteBuffer mbb = fc.map(MapMode.READ_ONLY, 0, f.length());
